@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { COLORS, FONTS } from '../../utils/designTokens.js';
-import { EXPENSE_CATEGORIES, SIZES_AMOUNT } from '../../utils/constants.js';
+import { EXPENSE_CATEGORIES } from '../../utils/constants.js';
 import CameraCapture from '../camera/CameraCapture.jsx';
 import PhotoPreview from '../camera/PhotoPreview.jsx';
-import TierPicker from './TierPicker.jsx';
+import AmountInput from './TierPicker.jsx';
 
 /**
  * LogModal — Full-screen expense logging flow.
@@ -18,7 +18,7 @@ import TierPicker from './TierPicker.jsx';
 export default function LogModal({ visible, onClose, onSave }) {
   const [step, setStep] = useState('camera');
   const [photoData, setPhotoData] = useState(null);
-  const [size, setSize] = useState('');
+  const [amount, setAmount] = useState('');
   const [cat, setCat] = useState('');
   const [saving, setSaving] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -26,7 +26,7 @@ export default function LogModal({ visible, onClose, onSave }) {
   function reset() {
     setStep('camera');
     setPhotoData(null);
-    setSize('');
+    setAmount('');
     setCat('');
     setShowWarning(false);
   }
@@ -86,8 +86,7 @@ export default function LogModal({ visible, onClose, onSave }) {
       onSave({
         name: cat,
         emoji,
-        size,
-        amount: SIZES_AMOUNT[size],
+        amount: Number(amount),
         date,
         dateTime,
         photo: photoData,
@@ -143,7 +142,7 @@ export default function LogModal({ visible, onClose, onSave }) {
           }}>
             Gaano kalaki ang gastos?
           </div>
-          <TierPicker selected={size} onSelect={setSize} />
+          <AmountInput value={amount} onChange={setAmount} />
 
           {/* Category picker */}
           <div style={{
@@ -195,7 +194,7 @@ export default function LogModal({ visible, onClose, onSave }) {
         <button
           onClick={() => {
             if (saving) return;
-            if (!size || !cat) setShowWarning(true);
+            if (!(Number(amount) > 0) || !cat) setShowWarning(true);
             else handleSave();
           }}
           disabled={saving}
@@ -210,7 +209,7 @@ export default function LogModal({ visible, onClose, onSave }) {
             background: saving
               ? COLORS.tan1
               : `linear-gradient(135deg, ${COLORS.dark}, ${COLORS.olive})`,
-            opacity: (size && cat) || saving ? 1 : 0.6,
+            opacity: (Number(amount) > 0 && cat) || saving ? 1 : 0.6,
             boxShadow: saving ? 'none' : '0 4px 16px rgba(96,108,56,0.35)',
             cursor: saving ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s',

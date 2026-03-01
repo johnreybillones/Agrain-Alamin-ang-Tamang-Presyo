@@ -39,12 +39,6 @@ export default function ExpenseCard({ expense, index, onDelete }) {
             fontSize: 'clamp(16px, 3.2vw, 20px)', fontWeight: 800, color: COLORS.pula,
             fontFamily: FONTS.duvet, letterSpacing: 0.5,
           }}>₱{expense.amount.toLocaleString()}</span>
-          <span style={{
-            fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 100,
-            background: ({ S: '#FFF8E1', M: '#FFF3CD', L: '#F5B7B1' })[expense.size],
-            color: ({ S: '#8B6914', M: '#B8860B', L: '#CD6155' })[expense.size],
-            letterSpacing: 0.5,
-          }}>{({ S: 'MALIIT', M: 'KATAMTAMAN', L: 'MALAKI' })[expense.size]}</span>
         </div>
 
         {/* Delete Button */}

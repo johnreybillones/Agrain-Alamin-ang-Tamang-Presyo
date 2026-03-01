@@ -1,29 +1,14 @@
-import { useState, useEffect } from 'react';
 import { COLORS, FONTS, CARD_STYLE } from '../../utils/designTokens.js';
 
 /**
  * HarvestInput — Card with number input for total harvest weight in kg.
- * Extracted from LevelAppV2's NegoScreen.
+ * Fires onChange on every keystroke so the break-even updates live.
+ * Max value: 99,999 kg.
  *
- * Uses internal draft state so the parent's `onChange` only fires when the
- * user commits the value (on blur or Enter), NOT on every keystroke. This
- * prevents the NegotiationSlider from jumping while the user is mid-typing.
- *
- * @param {string|number} value    - Committed value from parent (pre-populated)
- * @param {function}      onChange - Called with committed string value on blur/Enter
+ * @param {string|number} value    - Current value from parent
+ * @param {function}      onChange - Called with string value on every change
  */
 export default function HarvestInput({ value, onChange }) {
-  const [draft, setDraft] = useState(value ?? '');
-
-  // Sync draft when parent pre-populates the value (e.g. on first load from DB)
-  useEffect(() => {
-    setDraft(value ?? '');
-  }, [value]);
-
-  function commit() {
-    onChange(draft);
-  }
-
   return (
     <div style={{ ...CARD_STYLE, padding: 'clamp(12px, 2.5vw, 18px)' }}>
       <div style={{
@@ -39,13 +24,16 @@ export default function HarvestInput({ value, onChange }) {
       </div>
       <input
         type="number"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+        value={value}
+        min="1"
+        max="99999"
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === '' || parseFloat(v) <= 99999) onChange(v);
+        }}
         placeholder="(Halimbawa: 500)"
         className="harvest-input"
-        style={{ borderColor: draft ? COLORS.burnt : COLORS.tan1 }}
+        style={{ borderColor: value ? COLORS.burnt : COLORS.tan1 }}
         aria-label="Timbang ng Ani (kg)"
       />
       <div style={{

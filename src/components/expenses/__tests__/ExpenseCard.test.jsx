@@ -5,7 +5,6 @@ import ExpenseCard from '../ExpenseCard.jsx';
 const mockExpense = {
   name: 'Pataba',
   emoji: '🧪',
-  size: 'M',
   amount: 2500,
   date: 'June 01, 2025',
   dateTime: 'June 01, 2025 - 10:00 AM',
@@ -25,11 +24,6 @@ describe('ExpenseCard', () => {
   it('displays the category name', () => {
     render(<ExpenseCard expense={mockExpense} index={0} onDelete={() => {}} />);
     expect(screen.getByText('Pataba')).toBeInTheDocument();
-  });
-
-  it('displays the tier label (KATAMTAMAN for M)', () => {
-    render(<ExpenseCard expense={mockExpense} index={0} onDelete={() => {}} />);
-    expect(screen.getByText('KATAMTAMAN')).toBeInTheDocument();
   });
 
   it('has a delete button', () => {

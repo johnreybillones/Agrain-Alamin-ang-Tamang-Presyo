@@ -1,4 +1,3 @@
-import { TIER_VALUES } from '../utils/constants.js';
 import { saveExpense, getExpensesBySeasonId, deleteExpense as storeDeleteExpense } from '../stores/expenseStore.js';
 import { getActiveSeason } from './seasonService.js';
 
@@ -13,27 +12,22 @@ function generateId() {
   });
 }
 
-// Normalize short keys (S/M/L) to full keys (Small/Medium/Large)
-const TIER_ALIAS = { S: 'Small', M: 'Medium', L: 'Large' };
-
 /**
  * Create and persist a new expense.
- * @param {string} tier - "Small"|"Medium"|"Large" or short form "S"|"M"|"L"
+ * @param {number} amount - User-entered peso amount (must be > 0)
  * @param {Blob|string|null} photo - Camera photo as Blob or dataURL string (optional)
  * @param {Object} extraData - Additional fields from LogModal (name, emoji, date, etc.)
  * @returns {Promise<Object>} The saved expense object
  */
-export async function createExpense(tier, photo = null, extraData = {}) {
-  const normalizedTier = TIER_ALIAS[tier] ?? tier;
-  const value = TIER_VALUES[normalizedTier];
-  if (value === undefined) throw new Error(`Invalid tier: "${tier}"`);
+export async function createExpense(amount, photo = null, extraData = {}) {
+  const value = Number(amount);
+  if (!value || value <= 0) throw new Error(`Invalid amount: "${amount}"`);
 
   const activeSeason = await getActiveSeason();
 
   const expense = {
     id: generateId(),
     seasonId: activeSeason.id,
-    tier: normalizedTier,
     value,
     photoBlob: photo ?? null,
     timestamp: new Date().toISOString(),

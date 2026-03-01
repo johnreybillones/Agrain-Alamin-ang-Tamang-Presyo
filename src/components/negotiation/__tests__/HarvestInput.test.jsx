@@ -18,23 +18,22 @@ describe('HarvestInput', () => {
     expect(screen.getByText(/Ilagay ang timbang/)).toBeTruthy();
   });
 
-  it('does NOT call onChange while typing (deferred until blur)', () => {
+  it('calls onChange on every keystroke (live update)', () => {
     const onChange = vi.fn();
     render(<HarvestInput value="" onChange={onChange} />);
     fireEvent.change(screen.getByPlaceholderText('(Halimbawa: 500)'), {
       target: { value: '500' },
     });
-    // onChange must NOT fire mid-keystroke — only on blur/Enter
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith('500');
   });
 
-  it('calls onChange with committed value on blur', () => {
+  it('does not call onChange when value exceeds 99999', () => {
     const onChange = vi.fn();
     render(<HarvestInput value="" onChange={onChange} />);
-    const input = screen.getByPlaceholderText('(Halimbawa: 500)');
-    fireEvent.change(input, { target: { value: '500' } });
-    fireEvent.blur(input);
-    expect(onChange).toHaveBeenCalledWith('500');
+    fireEvent.change(screen.getByPlaceholderText('(Halimbawa: 500)'), {
+      target: { value: '100000' },
+    });
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('has an aria-label for accessibility', () => {

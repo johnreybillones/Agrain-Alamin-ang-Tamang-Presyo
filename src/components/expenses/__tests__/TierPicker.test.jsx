@@ -1,44 +1,43 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import TierPicker from '../TierPicker.jsx';
+import AmountInput from '../TierPicker.jsx';
 
-describe('TierPicker', () => {
+describe('AmountInput', () => {
   it('renders without crashing', () => {
-    render(<TierPicker selected="" onSelect={() => {}} />);
+    render(<AmountInput value="" onChange={() => {}} />);
   });
 
-  it('renders exactly 3 tier buttons', () => {
-    render(<TierPicker selected="" onSelect={() => {}} />);
-    const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(3);
+  it('renders a number input', () => {
+    render(<AmountInput value="" onChange={() => {}} />);
+    expect(screen.getByRole('spinbutton')).toBeInTheDocument();
   });
 
-  it('each button displays correct label: MALIIT, KATAMTAMAN, MALAKI', () => {
-    render(<TierPicker selected="" onSelect={() => {}} />);
-    expect(screen.getByText('MALIIT')).toBeInTheDocument();
-    expect(screen.getByText('KATAMTAMAN')).toBeInTheDocument();
-    expect(screen.getByText('MALAKI')).toBeInTheDocument();
+  it('has the correct placeholder text', () => {
+    render(<AmountInput value="" onChange={() => {}} />);
+    expect(screen.getByPlaceholderText('Halimbawa: 100')).toBeInTheDocument();
   });
 
-  it('each button displays correct value from root tier values (₱500/₱2,500/₱7,000)', () => {
-    render(<TierPicker selected="" onSelect={() => {}} />);
-    // Check via aria-labels which contain the sub-text
-    expect(screen.getByLabelText(/MALIIT/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/KATAMTAMAN/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/MALAKI/)).toBeInTheDocument();
+  it('calls onChange with a number when a valid value is typed', () => {
+    const handleChange = vi.fn();
+    render(<AmountInput value="" onChange={handleChange} />);
+    const input = screen.getByRole('spinbutton');
+    fireEvent.change(input, { target: { value: '500' } });
+    expect(handleChange).toHaveBeenCalledWith(500);
   });
 
-  it('calls onSelect callback with correct tier key when clicked', () => {
-    const handleSelect = vi.fn();
-    render(<TierPicker selected="" onSelect={handleSelect} />);
+  it('calls onChange with empty string when input is cleared', () => {
+    const handleChange = vi.fn();
+    render(<AmountInput value="500" onChange={handleChange} />);
+    const input = screen.getByRole('spinbutton');
+    fireEvent.change(input, { target: { value: '' } });
+    expect(handleChange).toHaveBeenCalledWith('');
+  });
 
-    fireEvent.click(screen.getByText('MALIIT'));
-    expect(handleSelect).toHaveBeenCalledWith('S');
-
-    fireEvent.click(screen.getByText('KATAMTAMAN'));
-    expect(handleSelect).toHaveBeenCalledWith('M');
-
-    fireEvent.click(screen.getByText('MALAKI'));
-    expect(handleSelect).toHaveBeenCalledWith('L');
+  it('does not call onChange for non-numeric input', () => {
+    const handleChange = vi.fn();
+    render(<AmountInput value="" onChange={handleChange} />);
+    const input = screen.getByRole('spinbutton');
+    fireEvent.change(input, { target: { value: 'abc' } });
+    expect(handleChange).not.toHaveBeenCalled();
   });
 });

@@ -3,9 +3,9 @@ import { render, screen } from '@testing-library/react';
 import ExpenseList from '../ExpenseList.jsx';
 
 const mockExpenses = [
-  { name: 'Pataba', emoji: '🧪', size: 'M', amount: 2500, date: 'June 01, 2025', dateTime: 'June 01, 2025 - 10:00 AM', photo: null },
-  { name: 'Binhi', emoji: '🌱', size: 'S', amount: 500, date: 'June 02, 2025', dateTime: 'June 02, 2025 - 08:00 AM', photo: null },
-  { name: 'Kagamitan', emoji: '🚜', size: 'L', amount: 7000, date: 'June 03, 2025', dateTime: 'June 03, 2025 - 02:00 PM', photo: null },
+  { name: 'Pataba', emoji: '🧪', amount: 2500, date: 'June 01, 2025', dateTime: 'June 01, 2025 - 10:00 AM', photo: null },
+  { name: 'Binhi', emoji: '🌱', amount: 500, date: 'June 02, 2025', dateTime: 'June 02, 2025 - 08:00 AM', photo: null },
+  { name: 'Kagamitan', emoji: '🚜', amount: 7000, date: 'June 03, 2025', dateTime: 'June 03, 2025 - 02:00 PM', photo: null },
 ];
 
 describe('ExpenseList', () => {

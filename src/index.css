@@ -391,24 +391,30 @@ body { background: var(--cream); font-family: var(--font-body); overflow-x: hidd
   overflow-x: hidden;
 }
 
-/* ─── Size / Tier Grid ─────────────────────────────────────────── */
-.size-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: clamp(10px, 1.5vw, 16px);
-  min-width: 0;
+/* ─── Amount Input ─────────────────────────────────────────────── */
+.amount-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: clamp(12px, 2.5vh, 18px) clamp(14px, 2.5vw, 20px);
+  border-radius: 14px;
+  border: 1.5px solid var(--tan2);
+  background: var(--white);
+  font-family: var(--font-duvet);
+  font-size: clamp(16px, 3.5vw, 22px);
+  color: var(--dark);
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
 }
-.size-card {
-  border-radius: 12px;
-  padding: clamp(10px, 1.5vh, 14px) clamp(10px, 1.8vw, 14px);
-  min-width: 0;
-  min-height: 60px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
+.amount-input:focus {
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(96,108,56,0.15);
+}
+.amount-input::-webkit-outer-spin-button,
+.amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* ─── Success Flash ────────────────────────────────────────────── */

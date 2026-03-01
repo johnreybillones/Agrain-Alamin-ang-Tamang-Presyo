@@ -49,14 +49,12 @@ describe('LogModal', () => {
     });
   });
 
-  it('renders tier picker in form step', async () => {
+  it('renders amount input in form step', async () => {
     mockGetUserMedia.mockRejectedValueOnce(new Error('fail'));
     render(<LogModal visible={true} onClose={vi.fn()} onSave={vi.fn()} />);
     await vi.waitFor(() => {
       expect(screen.getByText('Gaano kalaki ang gastos?')).toBeTruthy();
-      expect(screen.getByText('MALIIT')).toBeTruthy();
-      expect(screen.getByText('KATAMTAMAN')).toBeTruthy();
-      expect(screen.getByText('MALAKI')).toBeTruthy();
+      expect(screen.getByPlaceholderText('Halimbawa: 100')).toBeTruthy();
     });
   });
 

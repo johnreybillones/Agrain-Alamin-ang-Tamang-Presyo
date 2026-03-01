@@ -29,24 +29,36 @@ export default function NegotiationPage() {
     ? Math.ceil((totalExpenses / kg) * 100) / 100
     : null;
   const isReady = be !== null;
-  const SLIDER_MAX = be !== null
-    ? Math.max(Math.round(be * 1.5 * 100) / 100, 80)
-    : 80;
-
   const [offer, setOffer] = useState(SLIDER_MIN);
   // Strict comparison — no tolerance so SULIT/LUGI always matches the summary table
   const isProfit = isReady && offer >= be;
 
-  // Clamp offer to break-even when first computed
+  // sliderMax only ever grows — prevents the native <input type="range"> thumb from
+  // momentarily snapping to 100% (far right) when `max` shrinks faster than `value`
+  // during rapid typing (browser processes `max` attribute before `value`).
+  const computedMax = be !== null
+    ? Math.max(Math.round(be * 1.5 * 100) / 100, 80)
+    : 80;
+  const [sliderMax, setSliderMax] = useState(computedMax);
   useEffect(() => {
-    if (isReady && be !== null) {
-      const clamped = Math.min(SLIDER_MAX, Math.max(SLIDER_MIN, be));
-      setOffer(clamped);
+    if (isReady) setSliderMax(prev => Math.max(prev, computedMax));
+  }, [isReady, computedMax]);
+
+  // Initialize the slider at break-even only when isReady first becomes true.
+  // Subsequent harvest edits keep the slider where the user last left it.
+  const prevIsReadyRef = useRef(false);
+  useEffect(() => {
+    if (isReady && !prevIsReadyRef.current && be !== null) {
+      setOffer(Math.min(computedMax, Math.max(SLIDER_MIN, be)));
     }
-  }, [isReady, be, SLIDER_MAX]);
+    prevIsReadyRef.current = isReady;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady]);
 
   // Vibrate only on the transition from profit → loss (not on every update)
   const prevProfitRef = useRef(true);
+  // Debounce timer for DB saves — avoids hitting IndexedDB on every keystroke
+  const saveTimerRef = useRef(null);
   useEffect(() => {
     if (isReady && !isProfit && prevProfitRef.current) {
       checkOffer(offer, be); // fires navigator.vibrate internally
@@ -117,7 +129,11 @@ export default function NegotiationPage() {
       {totalExpenses > 0 && (
         <HarvestInput
           value={harvest}
-          onChange={(v) => { setHarvest(v); saveHarvestWeight(v); }}
+          onChange={(v) => {
+            setHarvest(v);
+            clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(() => saveHarvestWeight(v), 600);
+          }}
         />
       )}
 
@@ -131,7 +147,7 @@ export default function NegotiationPage() {
           onChange={(v) => setOffer(v)}
           breakEvenPrice={be}
           isProfitable={isProfit}
-          max={SLIDER_MAX}
+          max={sliderMax}
           min={SLIDER_MIN}
         />
       )}

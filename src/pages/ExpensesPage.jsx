@@ -14,7 +14,7 @@ export default function ExpensesPage() {
 
   async function handleSave(expenseData) {
     try {
-      await createExpense(expenseData.size, expenseData.photo, expenseData);
+      await createExpense(expenseData.amount, expenseData.photo, expenseData);
       await refresh();
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 900);
