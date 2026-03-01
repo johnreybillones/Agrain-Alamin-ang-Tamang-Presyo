@@ -1,87 +1,104 @@
-import { useEffect, useState } from 'react';
-import { TIERS } from '../../utils/constants.js';
-import { formatRelative } from '../../utils/dateUtils.js';
+import { useState } from 'react';
+import { COLORS, FONTS, CARD_STYLE } from '../../utils/designTokens.js';
 
 /**
- * Single expense row showing tier badge, value, optional photo thumbnail, relative time, and delete button.
+ * ExpenseCard — Single expense row extracted from LevelAppV2's ExpenseFullRow.
+ * Shows photo/emoji thumbnail, category name, date, amount, tier label, and delete button.
  */
-export default function ExpenseCard({ expense, onDelete }) {
-  const [photoUrl, setPhotoUrl] = useState(null);
-  const [confirming, setConfirming] = useState(false);
-  const tier = TIERS[expense.tier] || {};
-
-  useEffect(() => {
-    if (expense.photoBlob) {
-      const url = URL.createObjectURL(expense.photoBlob);
-      setPhotoUrl(url);
-      return () => URL.revokeObjectURL(url);
-    }
-  }, [expense.photoBlob]);
-
-  function handleDeleteClick() {
-    if (confirming) {
-      onDelete(expense.id);
-    } else {
-      setConfirming(true);
-      // Auto-cancel confirmation after 3 s
-      setTimeout(() => setConfirming(false), 3000);
-    }
-  }
+export default function ExpenseCard({ expense, index, onDelete }) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const dateTimeDisplay = expense.dateTime || expense.date || '';
 
   return (
-    <div className="flex items-center gap-4 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100">
-      {/* Tier badge */}
-      <div
-        className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white flex-shrink-0 ${tier.color || 'bg-gray-400'}`}
-      >
-        <span className="text-2xl leading-none">{tier.icon}</span>
-        <span className="text-xs font-bold mt-0.5">{tier.label?.[0]}</span>
-      </div>
+    <>
+      <div style={{
+        ...CARD_STYLE, display: 'flex', alignItems: 'center', gap: 'clamp(10px, 2vw, 14px)',
+        padding: 'clamp(10px, 2vw, 14px)', minHeight: 64,
+      }}>
+        {/* Photo/Emoji Thumbnail */}
+        <div style={{
+          width: 'clamp(44px, 10vw, 56px)', height: 'clamp(44px, 10vw, 56px)', borderRadius: 10, overflow: 'hidden',
+          flexShrink: 0, background: COLORS.tan1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {expense.photo ? (
+            <img src={expense.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: 22 }}>{expense.emoji}</span>
+          )}
+        </div>
 
-      {/* Details */}
-      <div className="flex-1 min-w-0">
-        <p className="text-lg font-bold text-gray-900">{tier.label || expense.tier}</p>
-        <p className="text-sm text-gray-500">{formatRelative(expense.timestamp)}</p>
-      </div>
+        {/* Name & Date */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 'clamp(13px, 2.5vw, 15px)', fontWeight: 700, color: COLORS.dark }}>{expense.name}</div>
+          <div style={{ fontSize: 'clamp(10px, 2vw, 12px)', color: COLORS.muted, marginTop: 2 }}>{dateTimeDisplay}</div>
+        </div>
 
-      {/* Photo thumbnail */}
-      {photoUrl && (
-        <img
-          src={photoUrl}
-          alt="Larawan ng gastos"
-          className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-gray-200"
-        />
-      )}
+        {/* Amount & Tier Label */}
+        <div style={{ flexShrink: 0, textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+          <span style={{
+            fontSize: 'clamp(16px, 3.2vw, 20px)', fontWeight: 800, color: COLORS.pula,
+            fontFamily: FONTS.duvet, letterSpacing: 0.5,
+          }}>₱{expense.amount.toLocaleString()}</span>
+          <span style={{
+            fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 100,
+            background: ({ S: '#FFF8E1', M: '#FFF3CD', L: '#F5B7B1' })[expense.size],
+            color: ({ S: '#8B6914', M: '#B8860B', L: '#CD6155' })[expense.size],
+            letterSpacing: 0.5,
+          }}>{({ S: 'MALIIT', M: 'KATAMTAMAN', L: 'MALAKI' })[expense.size]}</span>
+        </div>
 
-      {/* Value */}
-      <span className="text-xl font-bold text-gray-900 tabular-nums flex-shrink-0">
-        ₱{expense.value.toLocaleString()}
-      </span>
-
-      {/* Delete button */}
-      {onDelete && (
+        {/* Delete Button */}
         <button
-          onClick={handleDeleteClick}
-          className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
-            confirming
-              ? 'bg-red-600 text-white'
-              : 'bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500'
-          }`}
-          aria-label={confirming ? 'Kumpirmahin ang burahin' : 'Burahin ang gastos'}
-          title={confirming ? 'I-tap ulit para kumpirmahin' : 'Burahin'}
+          onClick={() => setShowDeleteConfirm(true)}
+          style={{
+            width: 40, height: 40, borderRadius: 10, border: 'none',
+            background: COLORS.pulaLight, color: COLORS.pula, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, flexShrink: 0,
+          }}
+          aria-label="Alisin sa listahan"
         >
-          {/* Trash can SVG icon */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className="w-5 h-5">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14H6L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-            <path d="M9 6V4h6v2" />
-          </svg>
+          🗑️
         </button>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowDeleteConfirm(false); }}
+          style={{ alignItems: 'center', justifyContent: 'center' }}
+        >
+          <div style={{
+            background: COLORS.cream, borderRadius: 18, padding: '28px 24px',
+            maxWidth: 360, width: '90%', boxShadow: `0 8px 32px ${COLORS.shadow}`,
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              fontFamily: FONTS.duvet, fontSize: 'clamp(18px, 3.5vw, 22px)',
+              color: COLORS.dark, letterSpacing: 2, textTransform: 'uppercase',
+              textAlign: 'center', marginBottom: 24, lineHeight: 1.4,
+            }}>Alisin na ito sa listahan?</div>
+            <div style={{ display: 'flex', gap: 14, justifyContent: 'center' }}>
+              <button
+                onClick={() => { onDelete(index); setShowDeleteConfirm(false); }}
+                style={{
+                  padding: '16px 32px', borderRadius: 14, border: 'none',
+                  background: COLORS.pula, color: COLORS.white, fontFamily: FONTS.duvet,
+                  fontSize: 'clamp(16px, 3.2vw, 18px)', letterSpacing: 2, cursor: 'pointer',
+                }}
+              >Oo</button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{
+                  padding: '16px 32px', borderRadius: 14, border: `2px solid ${COLORS.tan2}`,
+                  background: COLORS.white, color: COLORS.dark, fontFamily: FONTS.duvet,
+                  fontSize: 'clamp(16px, 3.2vw, 18px)', letterSpacing: 2, cursor: 'pointer',
+                }}
+              >Huwag</button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 }

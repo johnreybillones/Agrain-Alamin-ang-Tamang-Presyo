@@ -49,7 +49,7 @@ These decisions were agreed upon and must be followed throughout:
 | **Visual design** | LevelAppV2's earth-tone palette (`#FEFAE0`, `#606C38`, `#BC6C25`) + Google Fonts (Righteous, Bebas Neue, Playfair Display) |
 | **Styling system** | Tailwind CSS (as specified in Claude.md). Convert LevelAppV2's inline styles → Tailwind utility classes |
 | **Tier values** | Root's values (₱500 / ₱2,500 / ₱7,000) from Claude.md |
-| **Categories** | Add LevelAppV2's categories (Binhi, Pataba, Tubig, Paggawa, Iba pa) |
+| **Categories** | Add LevelAppV2's categories (Binhi, Pataba, Tubig, Tauhan, Kagamitan, Iba pa) |
 | **Photo storage** | `Blob` objects in IndexedDB (not base64 strings) |
 | **Routing** | `react-router-dom` (from root), not `useState`-based screen switching |
 | **Data persistence** | IndexedDB via `localforage` (from root), not in-memory `useState` |
@@ -116,32 +116,32 @@ These decisions were agreed upon and must be followed throughout:
 **What:** Pull all design values (colors, fonts, sizes, categories) out of `LevelAppV2/src/LevelApp.jsx` into importable modules.
 
 **Source locations in `LevelAppV2/src/LevelApp.jsx`:**
-- `C` object (colors): cream, olive, oliveDark, burnt, pula, dark, panel
-- `FONTS` object: duvet, bebas, serif
-- `card` style object (shared card styling)
-- `SIZES_AMOUNT` array (tier size/value mapping)
-- `CATS` array (category labels + emoji)
+- `C` object (16 colors): `cream`, `tan1`, `tan2`, `burnt`, `olive`, `dark`, `pula`, `pulaLight`, `pulaBorder`, `berde`, `berdeLight`, `berdeBorder`, `white`, `line`, `muted`, `shadow`
+- `FONTS` object (4 keys): `logo` (Righteous), `duvet` (Bebas Neue), `rustyne` (Playfair Display), `body` (Helvetica Neue)
+- `card` style object (shared card styling with white bg, border, borderRadius, overflow, boxShadow)
+- `SIZES_AMOUNT` object (tier size/value mapping): `{ S: 300, M: 1500, L: 3500 }` — **but we use root's values instead**
+- `CATS` object (6 category labels + emoji): `{ Binhi: '🌱', Pataba: '🧪', Tubig: '💧', Tauhan: '👷', Kagamitan: '🚜', Iba pa: '📦' }`
 
 **Actions:**
 1. Create `src/utils/designTokens.js` — export `COLORS`, `FONTS`, `CARD_STYLE` objects with values copied verbatim from LevelAppV2
 2. Update `src/utils/constants.js`:
    - Keep root's tier values: `{ S: 500, M: 2500, L: 7000 }`
-   - Add `EXPENSE_CATEGORIES` array: `['Binhi', 'Pataba', 'Tubig', 'Paggawa', 'Iba pa']` with corresponding emoji from LevelAppV2's `CATS`
+   - Add `EXPENSE_CATEGORIES` object: `{ Binhi: '🌱', Pataba: '🧪', Tubig: '💧', Tauhan: '👷', Kagamitan: '🚜', 'Iba pa': '📦' }` (6 entries, matching LevelAppV2's `CATS` exactly)
    - Add `TIER_LABELS` mapping: `{ S: 'Maliit', M: 'Katamtaman', L: 'Malaki' }`
 
 **Guardrails:**
 - [ ] **Automated test** (`src/utils/__tests__/designTokens.test.js`):
   ```
-  - Import COLORS — verify all 7 color keys exist and are valid hex strings
-  - Import FONTS — verify all 3 font keys exist and are non-empty strings
-  - Import CARD_STYLE — verify it's a non-empty object
+  - Import COLORS — verify all 16 color keys exist and are valid hex/rgba strings
+  - Import FONTS — verify all 4 font keys exist and are non-empty strings
+  - Import CARD_STYLE — verify it's a non-empty object with background, border, borderRadius
   ```
 - [ ] **Automated test** (`src/utils/__tests__/constants.test.js`):
   ```
   - TIER_VALUES.S === 500, TIER_VALUES.M === 2500, TIER_VALUES.L === 7000
-  - EXPENSE_CATEGORIES has exactly 5 entries
-  - EXPENSE_CATEGORIES includes 'Binhi', 'Pataba', 'Tubig', 'Paggawa', 'Iba pa'
-  - Each category has an emoji property that is a non-empty string
+  - EXPENSE_CATEGORIES has exactly 6 entries
+  - EXPENSE_CATEGORIES includes 'Binhi', 'Pataba', 'Tubig', 'Tauhan', 'Kagamitan', 'Iba pa'
+  - Each category has an emoji that is a non-empty string
   ```
 - [ ] **Manual:** `npm run test` passes
 - [ ] **Manual:** Verify values match LevelAppV2 source exactly (spot-check `COLORS.cream === '#FEFAE0'`, etc.)
@@ -218,7 +218,7 @@ These decisions were agreed upon and must be followed throughout:
   ```
   - Renders without crashing when `show` is true
   - Does not render visible content when `show` is false
-  - Contains the success message text ("Na-save na!" or equivalent)
+  - Contains the success message text ("Nailista na" — LevelAppV2's actual text)
   ```
 - [ ] **Manual:** `npm run test` passes
 
@@ -321,9 +321,10 @@ These decisions were agreed upon and must be followed throughout:
 | LevelAppV2 Component/Logic | Target File |
 |---|---|
 | Harvest weight input | `src/components/negotiation/HarvestInput.jsx` |
-| Bucket/tank visual | `src/components/negotiation/BucketVisual.jsx` |
 | Offer slider | `src/components/negotiation/NegotiationSlider.jsx` |
-| Break-even price display + LUGI/KITA label | `src/components/negotiation/BreakEvenDisplay.jsx` |
+| Break-even price display + LUGI/SULIT label | `src/components/negotiation/BreakEvenDisplay.jsx` |
+
+**Note:** `BucketVisual` is used on the **HomePage** (SakahanScreen), not the NegotiationPage. It is extracted in Step 1.7 as part of HomePage.
 
 **Actions:**
 1. Extract each component with its inline styles
@@ -356,8 +357,8 @@ These decisions were agreed upon and must be followed throughout:
   - Renders without crashing
   - Shows break-even price formatted with ₱
   - Shows "LUGI!" when offer < breakEven
-  - Shows "KITA!" (or LevelAppV2's "SULIT!") when offer >= breakEven
-  - Background changes to red when LUGI, green when KITA
+  - Shows "SULIT!" when offer >= breakEven
+  - Background changes to red when LUGI, green when SULIT
   ```
 - [ ] **Manual:** `npm run test` passes
 
@@ -385,7 +386,7 @@ These decisions were agreed upon and must be followed throughout:
   ```
   - Renders without crashing
   - Contains the BucketVisual component
-  - Contains a button/link to log expenses ("Mag-log ng Gastos" or LevelAppV2 equivalent)
+  - Contains a button/link to log expenses ("Maglista ng Gastos")
   ```
 - [ ] **Automated test** (`src/pages/__tests__/ExpensesPage.test.jsx`):
   ```
@@ -431,7 +432,7 @@ These decisions were agreed upon and must be followed throughout:
 - [ ] **`npm run test`** — all automated tests from Steps 1.1–1.8 pass
 - [ ] **`npm run dev`** — app starts without errors
 - [ ] **`npm run build`** — production build succeeds with no errors
-- [ ] **Manual: Home page** — bucket visual renders, "log expense" button works
+- [ ] **Manual: Home page** — bucket visual renders, "Maglista ng Gastos" button works
 - [ ] **Manual: Expenses page** — can open LogModal, see camera (or mock), select category, select tier, see success flash, expense appears in list
 - [ ] **Manual: Negotiation page** — can enter harvest weight, move slider, see red/green transitions
 - [ ] **Manual: Navigation** — all three pages reachable via bottom nav
@@ -456,27 +457,33 @@ These decisions were agreed upon and must be followed throughout:
 
    @theme {
      --color-cream: #FEFAE0;
-     --color-olive: #606C38;
-     --color-olive-dark: #283618;
+     --color-tan1: #EFDCAC;
+     --color-tan2: #D4A373;
      --color-burnt: #BC6C25;
+     --color-olive: #606C38;
+     --color-dark: #45462A;
      --color-pula: #C0392B;
-     --color-dark: #232323;
-     --color-panel: #fffbe6;
+     --color-pula-light: #FDF0EE;
+     --color-berde: #3B7D3E;
+     --color-berde-light: #EEF5EE;
+     --color-line: #E0D4B0;
+     --color-muted: #8B7D5A;
 
-     --font-duvet: 'Righteous', 'Arial Black', sans-serif;
-     --font-bebas: 'Bebas Neue', 'Impact', sans-serif;
-     --font-playfair: 'Playfair Display', 'Georgia', serif;
+     --font-logo: 'Righteous', 'Arial Black', sans-serif;
+     --font-duvet: 'Bebas Neue', 'Arial Narrow', sans-serif;
+     --font-rustyne: 'Playfair Display', Georgia, serif;
+     --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
    }
    ```
 2. Add custom keyframes for success flash animation in the same file
 3. Add slider thumb/track overrides compatible with LevelAppV2's burnt-orange styling
 
 **Guardrails:**
-- [ ] **Manual:** Create a temporary test component that uses every custom class: `bg-cream`, `text-olive`, `font-duvet`, etc. Verify they compile and render correctly
+- [ ] **Manual:** Create a temporary test component that uses every custom class: `bg-cream`, `text-olive`, `font-logo`, `font-duvet`, etc. Verify they compile and render correctly
 - [ ] **Automated test** (`src/test/tailwind-theme.test.js`):
   ```
-  - Read src/index.css, verify it contains all 7 custom color definitions
-  - Verify it contains all 3 custom font definitions
+  - Read src/index.css, verify it contains all 12 custom color definitions
+  - Verify it contains all 4 custom font definitions
   ```
 - [ ] **Manual:** `npm run dev` — no Tailwind compilation errors
 - [ ] **Manual:** `npm run build` — no build errors
@@ -702,11 +709,11 @@ These decisions were agreed upon and must be followed throughout:
    | Expenses tab | Gastos |
    | Negotiation tab | Benta |
    | Loss state | LUGI! |
-   | Profit state | SULIT! (or KITA! — decide now) |
+   | Profit state | SULIT! |
    | Break-even price | Presyong Balik-Puhunan |
-   | Log expense button | Mag-log ng Gastos |
+   | Log expense button | Maglista ng Gastos |
    | Empty state | Walang gastos pa |
-   | Save confirmation | Na-save na! |
+   | Save confirmation | Nailista na |
 
 2. Search all component files for hardcoded Filipino strings and replace with constants from the labels file
 
@@ -747,12 +754,12 @@ These decisions were agreed upon and must be followed throughout:
 
 | Test | Steps | Expected Result |
 |---|---|---|
-| **Log expense flow** | Open app → Gastos → "Mag-log" → camera opens → capture → select category → select tier → confirm | Expense saved, success flash, expense appears in list |
+| **Log expense flow** | Open app → Gastos → "Maglista" → camera opens → capture → select category → select tier → confirm | Expense saved, success flash, expense appears in list |
 | **Expense persistence** | Log expense → refresh page | Expense still in list |
 | **Expense delete** | Swipe/tap delete on expense → confirm | Expense removed, total updates |
 | **Break-even calculation** | Log 4 expenses (₱500 + ₱2,500 + ₱2,500 + ₱7,000 = ₱12,500) → Benta → enter 500kg | Break-even shows ₱25/kg |
 | **LUGI signal** | With break-even at ₱25, slide to ₱20 | Background turns red, "LUGI!" shows, phone vibrates (Android) |
-| **SULIT/KITA signal** | Slide to ₱30 | Background turns green, "SULIT!"/"KITA!" shows, no vibration |
+| **SULIT signal** | Slide to ₱30 | Background turns green, "SULIT!" shows, no vibration |
 | **Instant feedback** | Slowly drag slider across break-even line | Color + label + vibration change at EXACT threshold, no delay |
 | **Bucket visual** | Log expenses on Home page | Bucket fill level increases with each expense |
 | **Navigation** | Tap each bottom nav tab | Correct page loads, active indicator updates |

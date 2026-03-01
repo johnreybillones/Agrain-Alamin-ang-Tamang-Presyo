@@ -1,20 +1,31 @@
 import ExpenseCard from './ExpenseCard.jsx';
-import EmptyState from '../ui/EmptyState.jsx';
+import { COLORS } from '../../utils/designTokens.js';
 
 /**
  * Scrollable list of logged expenses for the current season.
+ * Extracted from LevelAppV2's GastosScreen expense list rendering.
  * @param {Array}    expenses  - List of expense objects
- * @param {function} onDelete  - Optional callback(id) when user deletes an expense
+ * @param {function} onDelete  - Callback(index) when user deletes an expense
  */
 export default function ExpenseList({ expenses, onDelete }) {
   if (!expenses || expenses.length === 0) {
-    return <EmptyState />;
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '40px 20px', color: COLORS.muted, minHeight: 120,
+      }}>
+        <span style={{ fontSize: 14, textAlign: 'center', lineHeight: 1.6 }}>
+          Walang nakalista, pindutin ang "Maglista ng Gastos" para magsimula.
+        </span>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-3 px-4 py-3">
-      {expenses.map((expense) => (
-        <ExpenseCard key={expense.id} expense={expense} onDelete={onDelete} />
+    <div className="expense-list">
+      {expenses.map((expense, i) => (
+        <ExpenseCard key={i} expense={expense} index={i} onDelete={onDelete} />
       ))}
     </div>
   );

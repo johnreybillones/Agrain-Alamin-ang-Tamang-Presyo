@@ -1,19 +1,29 @@
-import { useSeason } from '../../context/SeasonContext.jsx';
+import { COLORS, FONTS } from '../../utils/designTokens.js';
 
 export default function Header() {
-  const { season } = useSeason();
-
   return (
-    <header className="bg-green-700 text-white px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-10">
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">🌱</span>
-        <span className="text-xl font-bold tracking-tight">Level</span>
+    <header className="level-topbar">
+      <div className="topbar-inner">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 18 }}>🌾</span>
+          <span style={{
+            fontFamily: FONTS.logo,
+            fontSize: "clamp(20px, 4vw, 26px)",
+            color: COLORS.tan1,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            lineHeight: 1,
+          }}>Level</span>
+        </div>
+        <span style={{
+          fontFamily: FONTS.rustyne,
+          fontStyle: "italic",
+          fontSize: "clamp(9px, 1.8vw, 11px)",
+          color: COLORS.tan1,
+          letterSpacing: 0.5,
+          opacity: 0.55,
+        }}>Alamin ang tamang presyo.</span>
       </div>
-      {season && (
-        <span className="text-sm bg-green-600 px-3 py-1 rounded-full font-medium">
-          {season.status === 'Active' ? 'Panahon ng Pagtatanim' : season.status}
-        </span>
-      )}
     </header>
   );
 }

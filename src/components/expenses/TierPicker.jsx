@@ -1,30 +1,61 @@
-import { TIERS } from '../../utils/constants.js';
+import { COLORS, FONTS } from '../../utils/designTokens.js';
+import { SIZES_AMOUNT } from '../../utils/constants.js';
 
 /**
- * Three large S/M/L tier picker buttons.
- * @param {function} onSelect - Called with tier key ("Small" | "Medium" | "Large")
+ * TierPicker — Three large S/M/L tier buttons extracted from LevelAppV2's LogModal.
+ * Uses root's tier values (₱500 / ₱2,500 / ₱7,000).
+ * @param {string}   selected - Currently selected tier key ('S', 'M', or 'L')
+ * @param {function} onSelect - Called with tier key ('S' | 'M' | 'L')
  */
-export default function TierPicker({ onSelect }) {
+
+const sizeOpts = [
+  { key: 'S', label: 'MALIIT', sub: `₱${SIZES_AMOUNT.S.toLocaleString()} pababa`, bars: [14], iconColor: '#FFECB3' },
+  { key: 'M', label: 'KATAMTAMAN', sub: `₱${SIZES_AMOUNT.S.toLocaleString()}–₱${SIZES_AMOUNT.M.toLocaleString()}`, bars: [14, 22, 14], iconColor: '#B8860B' },
+  { key: 'L', label: 'MALAKI', sub: `higit sa ₱${SIZES_AMOUNT.M.toLocaleString()}`, bars: [16, 28, 16], iconColor: COLORS.pula },
+];
+
+export default function TierPicker({ selected, onSelect }) {
   return (
-    <div className="flex flex-col gap-4 px-4">
-      {Object.values(TIERS).map(({ key, label, sublabel, value, color, icon }) => (
-        <button
-          key={key}
-          onClick={() => onSelect(key)}
-          className={`min-h-20 flex items-center justify-between px-6 py-4 rounded-2xl text-white active:scale-95 transition-transform shadow-md ${color}`}
-        >
-          <div className="flex items-center gap-4">
-            <span className="text-4xl">{icon}</span>
-            <div className="text-left">
-              <p className="text-xl font-bold">{label}</p>
-              <p className="text-sm opacity-90">{sublabel}</p>
+    <div className="size-grid">
+      {sizeOpts.map(opt => {
+        const isActive = selected === opt.key;
+        return (
+          <div
+            key={opt.key}
+            onClick={() => onSelect(opt.key)}
+            className="size-card"
+            data-active={isActive}
+            role="button"
+            tabIndex={0}
+            aria-label={`${opt.label} - ${opt.sub}`}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(opt.key); }}
+            style={{
+              background: isActive ? '#A5D6A7' : COLORS.white,
+              border: isActive ? `3px solid ${COLORS.berde}` : `1.5px solid ${COLORS.tan1}`,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 24 }}>
+              {opt.bars.map((h, i) => (
+                <div key={i} style={{
+                  width: 8, height: h * 1.2, borderRadius: 4,
+                  background: opt.iconColor,
+                }} />
+              ))}
             </div>
+            <span style={{
+              fontSize: 'clamp(12px, 2.6vw, 16px)', fontWeight: 800,
+              color: isActive ? COLORS.dark : COLORS.burnt,
+              letterSpacing: 0.5, textAlign: 'center',
+            }}>{opt.label}</span>
+            <span style={{
+              fontSize: 'clamp(10px, 2vw, 12px)',
+              color: isActive ? COLORS.dark : COLORS.burnt,
+              textAlign: 'center', opacity: isActive ? 1 : 0.9,
+            }}>{opt.sub}</span>
           </div>
-          <span className="text-2xl font-bold tabular-nums">
-            ₱{value.toLocaleString()}
-          </span>
-        </button>
-      ))}
+        );
+      })}
     </div>
   );
 }

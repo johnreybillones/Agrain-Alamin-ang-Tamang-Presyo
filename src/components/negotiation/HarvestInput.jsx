@@ -1,21 +1,44 @@
+import { COLORS, FONTS, CARD_STYLE } from '../../utils/designTokens.js';
+
 /**
- * Large number input for total harvest weight in kg.
+ * HarvestInput — Card with number input for total harvest weight in kg.
+ * Extracted from LevelAppV2's NegoScreen.
+ *
+ * @param {string|number} value    - Current input value
+ * @param {function}      onChange - Called with new string value
  */
 export default function HarvestInput({ value, onChange }) {
   return (
-    <div className="px-4">
-      <label className="block text-lg font-semibold text-gray-700 mb-2">
-        Timbang ng Ani (kg)
-      </label>
+    <div style={{ ...CARD_STYLE, padding: 'clamp(12px, 2.5vw, 18px)' }}>
+      <div style={{
+        fontFamily: FONTS.duvet,
+        fontSize: 'clamp(16px, 3.5vw, 22px)',
+        fontWeight: 700,
+        color: COLORS.dark,
+        letterSpacing: 2,
+        textTransform: 'uppercase',
+        marginBottom: 10,
+      }}>
+        Ilang kilo ang ani?
+      </div>
       <input
         type="number"
-        inputMode="numeric"
-        min="1"
-        placeholder="hal. 500"
-        value={value || ''}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className="w-full min-h-14 px-4 py-3 text-3xl font-bold border-2 border-green-400 rounded-xl bg-white text-gray-900 focus:outline-none focus:border-green-600 tabular-nums"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="(Halimbawa: 500)"
+        className="harvest-input"
+        style={{ borderColor: value ? COLORS.burnt : COLORS.tan1 }}
+        aria-label="Timbang ng Ani (kg)"
       />
+      <div style={{
+        fontSize: 'clamp(13px, 2.5vw, 15px)',
+        color: COLORS.dark,
+        marginTop: 10,
+        lineHeight: 1.5,
+        fontWeight: 500,
+      }}>
+        Ilagay ang timbang para makita ang tamang presyo.
+      </div>
     </div>
   );
 }
