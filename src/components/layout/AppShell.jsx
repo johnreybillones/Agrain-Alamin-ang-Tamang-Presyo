@@ -5,7 +5,7 @@ export default function AppShell({ children }) {
   return (
     <div className="level-root">
       <Header />
-      <main className="screen-body">{children}</main>
+      <main className="level-main">{children}</main>
       <BottomNav />
     </div>
   );

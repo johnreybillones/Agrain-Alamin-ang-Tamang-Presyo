@@ -12,6 +12,15 @@ export default function NegotiationPage() {
   const [harvest, setHarvest] = useState('');
   const SLIDER_MIN = 1;
 
+  // Pre-populate harvest weight from the saved season record.
+  // Runs once when season first loads from IndexedDB (starts as null).
+  useEffect(() => {
+    if (season?.totalWeight > 0 && !harvest) {
+      setHarvest(String(season.totalWeight));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [season?.totalWeight]);
+
   // Derived state
   const kg = parseFloat(harvest) || 0;
   // Always ceil to nearest cent — the farmer needs at LEAST this price to break even.
@@ -23,7 +32,6 @@ export default function NegotiationPage() {
   const SLIDER_MAX = be !== null
     ? Math.max(Math.round(be * 1.5 * 100) / 100, 80)
     : 80;
-  const toQuarter = (v) => Math.round(v * 4) / 4;
 
   const [offer, setOffer] = useState(SLIDER_MIN);
   // Strict comparison — no tolerance so SULIT/LUGI always matches the summary table
@@ -116,11 +124,11 @@ export default function NegotiationPage() {
       {/* Break-even display — shown only when ready */}
       {isReady && <BreakEvenDisplay breakEvenPrice={be} />}
 
-      {/* Slider — shown only when ready */}
+      {/* Slider — shown only when ready. toQuarter is applied inside NegotiationSlider. */}
       {isReady && (
         <NegotiationSlider
           value={offer}
-          onChange={(v) => setOffer(toQuarter(v))}
+          onChange={(v) => setOffer(v)}
           breakEvenPrice={be}
           isProfitable={isProfit}
           max={SLIDER_MAX}

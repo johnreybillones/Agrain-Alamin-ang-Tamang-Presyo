@@ -1,13 +1,29 @@
+import { useState, useEffect } from 'react';
 import { COLORS, FONTS, CARD_STYLE } from '../../utils/designTokens.js';
 
 /**
  * HarvestInput — Card with number input for total harvest weight in kg.
  * Extracted from LevelAppV2's NegoScreen.
  *
- * @param {string|number} value    - Current input value
- * @param {function}      onChange - Called with new string value
+ * Uses internal draft state so the parent's `onChange` only fires when the
+ * user commits the value (on blur or Enter), NOT on every keystroke. This
+ * prevents the NegotiationSlider from jumping while the user is mid-typing.
+ *
+ * @param {string|number} value    - Committed value from parent (pre-populated)
+ * @param {function}      onChange - Called with committed string value on blur/Enter
  */
 export default function HarvestInput({ value, onChange }) {
+  const [draft, setDraft] = useState(value ?? '');
+
+  // Sync draft when parent pre-populates the value (e.g. on first load from DB)
+  useEffect(() => {
+    setDraft(value ?? '');
+  }, [value]);
+
+  function commit() {
+    onChange(draft);
+  }
+
   return (
     <div style={{ ...CARD_STYLE, padding: 'clamp(12px, 2.5vw, 18px)' }}>
       <div style={{
@@ -23,11 +39,13 @@ export default function HarvestInput({ value, onChange }) {
       </div>
       <input
         type="number"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
         placeholder="(Halimbawa: 500)"
         className="harvest-input"
-        style={{ borderColor: value ? COLORS.burnt : COLORS.tan1 }}
+        style={{ borderColor: draft ? COLORS.burnt : COLORS.tan1 }}
         aria-label="Timbang ng Ani (kg)"
       />
       <div style={{
