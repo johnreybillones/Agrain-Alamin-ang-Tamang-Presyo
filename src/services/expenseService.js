@@ -13,14 +13,19 @@ function generateId() {
   });
 }
 
+// Normalize short keys (S/M/L) to full keys (Small/Medium/Large)
+const TIER_ALIAS = { S: 'Small', M: 'Medium', L: 'Large' };
+
 /**
  * Create and persist a new expense.
- * @param {string} tier - "Small" | "Medium" | "Large"
- * @param {Blob|null} photoBlob - Camera-captured receipt photo (optional)
+ * @param {string} tier - "Small"|"Medium"|"Large" or short form "S"|"M"|"L"
+ * @param {Blob|string|null} photo - Camera photo as Blob or dataURL string (optional)
+ * @param {Object} extraData - Additional fields from LogModal (name, emoji, date, etc.)
  * @returns {Promise<Object>} The saved expense object
  */
-export async function createExpense(tier, photoBlob = null) {
-  const value = TIER_VALUES[tier];
+export async function createExpense(tier, photo = null, extraData = {}) {
+  const normalizedTier = TIER_ALIAS[tier] ?? tier;
+  const value = TIER_VALUES[normalizedTier];
   if (value === undefined) throw new Error(`Invalid tier: "${tier}"`);
 
   const activeSeason = await getActiveSeason();
@@ -28,10 +33,12 @@ export async function createExpense(tier, photoBlob = null) {
   const expense = {
     id: generateId(),
     seasonId: activeSeason.id,
-    tier,
+    tier: normalizedTier,
     value,
-    photoBlob: photoBlob ?? null,
+    photoBlob: photo ?? null,
     timestamp: new Date().toISOString(),
+    // Merge rich LogModal data (name, emoji, date, dateTime, amount, etc.)
+    ...extraData,
   };
 
   await saveExpense(expense);

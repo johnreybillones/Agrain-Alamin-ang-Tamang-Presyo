@@ -12,10 +12,12 @@ export default function NegotiationPage() {
   const [harvest, setHarvest] = useState('');
   const SLIDER_MIN = 1;
 
-  // Derived state — matches LevelAppV2's NegoScreen logic exactly
+  // Derived state
   const kg = parseFloat(harvest) || 0;
+  // Always ceil to nearest cent — the farmer needs at LEAST this price to break even.
+  // Math.round would round ₱1.004 DOWN to ₱1.00, showing SULIT while losing money.
   const be = kg > 0 && totalExpenses > 0
-    ? Math.round((totalExpenses / kg) * 100) / 100
+    ? Math.ceil((totalExpenses / kg) * 100) / 100
     : null;
   const isReady = be !== null;
   const SLIDER_MAX = be !== null
@@ -24,7 +26,8 @@ export default function NegotiationPage() {
   const toQuarter = (v) => Math.round(v * 4) / 4;
 
   const [offer, setOffer] = useState(SLIDER_MIN);
-  const isProfit = isReady && offer >= be - 0.005;
+  // Strict comparison — no tolerance so SULIT/LUGI always matches the summary table
+  const isProfit = isReady && offer >= be;
 
   // Clamp offer to break-even when first computed
   useEffect(() => {
@@ -43,10 +46,12 @@ export default function NegotiationPage() {
     prevProfitRef.current = isProfit;
   }, [offer, isProfit, isReady, be]);
 
-  // Persist harvest weight to season store
-  async function saveHarvestWeight() {
-    if (!season || kg <= 0) return;
-    await updateSeason(season.id, { totalWeight: kg, totalExpenseValue: totalExpenses });
+  // Persist harvest weight to season store.
+  // Accepts fresh string value directly to avoid stale closure on `harvest` state.
+  async function saveHarvestWeight(freshVal) {
+    const kgFresh = parseFloat(freshVal) || 0;
+    if (!season || kgFresh <= 0) return;
+    await updateSeason(season.id, { totalWeight: kgFresh, totalExpenseValue: totalExpenses });
     await refresh();
   }
 
@@ -104,7 +109,7 @@ export default function NegotiationPage() {
       {totalExpenses > 0 && (
         <HarvestInput
           value={harvest}
-          onChange={(v) => { setHarvest(v); saveHarvestWeight(); }}
+          onChange={(v) => { setHarvest(v); saveHarvestWeight(v); }}
         />
       )}
 
