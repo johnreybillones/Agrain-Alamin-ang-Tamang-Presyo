@@ -29,12 +29,7 @@ export function SeasonProvider({ children }) {
     refresh().finally(() => setLoading(false));
   }, [refresh]);
 
-  // Listen for PWA offline-ready event dispatched from main.jsx
-  useEffect(() => {
-    // const handler = () => showToast('Handa na ang Agrain para sa offline!');
-    window.addEventListener('pwa-offline-ready', handler);
-    return () => window.removeEventListener('pwa-offline-ready', handler);
-  }, [showToast]);
+
 
   return (
     <SeasonContext.Provider
