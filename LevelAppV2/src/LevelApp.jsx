@@ -34,6 +34,7 @@ const card = {
   boxShadow: `0 2px 12px ${C.shadow}`,
 };
 
+/* ─── SMALL COMPONENTS ──────────────────────── */
 
 function TopBar() {
   return (
@@ -135,6 +136,8 @@ function SuccessFlash({ visible }) {
   );
 }
 
+/* ─── SCREEN: SAKAHAN ─────────────────────────── */
+
 function SakahanScreen({ expenses, onLog, onNego }) {
   const total = expenses.reduce((s, e) => s + e.amount, 0);
   const bucketFill = Math.min((total / 35000) * 100, 100);
@@ -182,6 +185,8 @@ function SakahanScreen({ expenses, onLog, onNego }) {
     </div>
   );
 }
+
+/* ─── SCREEN: GASTOS ─────────────────────────── */
 
 function GastosScreen({ expenses, onLog, onDelete }) {
   const total = expenses.reduce((s, e) => s + e.amount, 0);
@@ -324,6 +329,8 @@ function ExpenseFullRow({ expense, index, onDelete }) {
     </>
   );
 }
+
+/* ─── SCREEN: NEGOSASYON ─────────────────────── */
 
 function NegoScreen({ expenses }) {
   const [harvest, setHarvest] = useState("");
@@ -517,6 +524,8 @@ const CATS = {
   "Tauhan": "👷", "Kagamitan": "🚜", "Iba pa": "📦",
 };
 
+/* ─── LOG MODAL ──────────────────────────────── */
+
 function LogModal({ visible, onClose, onSave }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -602,6 +611,7 @@ function LogModal({ visible, onClose, onSave }) {
   function handleSave() {
     setSaving(true);
     setTimeout(() => {
+      const now = new Date();
       const date = now.toLocaleDateString("en-US", {
         month: "long",
         day: "2-digit",
@@ -747,7 +757,7 @@ function LogModal({ visible, onClose, onSave }) {
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
         >
-          {saving ? "Sine-save..." : "Ilista "}
+          {saving ? "Sine-save..." : "Ilista na"}
         </button>
         {showWarning && (
           <div
@@ -792,6 +802,8 @@ function LogModal({ visible, onClose, onSave }) {
     </div>
   );
 }
+
+/* ── ROOT APP ── */
 
 export default function LevelApp() {
   const [screen, setScreen] = useState("sakahan");
@@ -838,6 +850,8 @@ export default function LevelApp() {
     </>
   );
 }
+
+/* ── GLOBAL STYLES ── */
 
 function GlobalStyles() {
   return (
