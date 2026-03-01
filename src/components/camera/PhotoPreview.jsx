@@ -1,43 +1,45 @@
-import { useEffect, useState } from 'react';
+import { COLORS, FONTS } from '../../utils/designTokens.js';
 
 /**
- * Shows captured photo for confirmation or retake.
- * @param {Blob}     blob       - The captured image blob
- * @param {function} onConfirm  - User accepts the photo
- * @param {function} onRetake   - User wants to retake
+ * PhotoPreview — Shows captured photo with retake/skip option.
+ * Extracted from LevelAppV2's LogModal form step.
+ * @param {string|null} photoData - Data URL of the captured photo
+ * @param {function}    onRetake  - Called when user wants to retake photo
  */
-export default function PhotoPreview({ blob, onConfirm, onRetake }) {
-  const [url, setUrl] = useState(null);
-
-  useEffect(() => {
-    if (blob) {
-      const objectUrl = URL.createObjectURL(blob);
-      setUrl(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    }
-  }, [blob]);
+export default function PhotoPreview({ photoData, onRetake }) {
+  if (!photoData) return null;
 
   return (
-    <div className="fixed inset-0 z-40 bg-black flex flex-col">
-      <div className="flex-1 relative overflow-hidden">
-        {url && (
-          <img src={url} alt="Nakunang larawan" className="w-full h-full object-cover" />
-        )}
-      </div>
-      <div className="bg-black py-8 flex items-center justify-center gap-6 px-6">
-        <button
-          onClick={onRetake}
-          className="flex-1 min-h-14 rounded-xl border border-white/50 text-white text-lg font-bold"
-        >
-          Kunan Ulit
-        </button>
-        <button
-          onClick={onConfirm}
-          className="flex-1 min-h-14 rounded-xl bg-green-600 text-white text-lg font-bold"
-        >
-          Gamitin Ito
-        </button>
-      </div>
+    <div style={{ position: 'relative', marginBottom: 14 }}>
+      <img
+        src={photoData}
+        alt="Larawan ng resibo"
+        style={{
+          width: '100%',
+          maxHeight: 220,
+          objectFit: 'cover',
+          borderRadius: 14,
+          border: `1.5px solid ${COLORS.line}`,
+        }}
+      />
+      <button
+        onClick={onRetake}
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          right: 10,
+          background: 'rgba(0,0,0,0.55)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 8,
+          padding: '7px 18px',
+          fontFamily: FONTS.body,
+          fontSize: 15,
+          cursor: 'pointer',
+        }}
+      >
+        ⟳ Ulitin
+      </button>
     </div>
   );
 }

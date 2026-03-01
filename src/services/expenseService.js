@@ -1,4 +1,3 @@
-import { TIER_VALUES } from '../utils/constants.js';
 import { saveExpense, getExpensesBySeasonId, deleteExpense as storeDeleteExpense } from '../stores/expenseStore.js';
 import { getActiveSeason } from './seasonService.js';
 
@@ -15,23 +14,25 @@ function generateId() {
 
 /**
  * Create and persist a new expense.
- * @param {string} tier - "Small" | "Medium" | "Large"
- * @param {Blob|null} photoBlob - Camera-captured receipt photo (optional)
+ * @param {number} amount - User-entered peso amount (must be > 0)
+ * @param {Blob|string|null} photo - Camera photo as Blob or dataURL string (optional)
+ * @param {Object} extraData - Additional fields from LogModal (name, emoji, date, etc.)
  * @returns {Promise<Object>} The saved expense object
  */
-export async function createExpense(tier, photoBlob = null) {
-  const value = TIER_VALUES[tier];
-  if (value === undefined) throw new Error(`Invalid tier: "${tier}"`);
+export async function createExpense(amount, photo = null, extraData = {}) {
+  const value = Number(amount);
+  if (!value || value <= 0) throw new Error(`Invalid amount: "${amount}"`);
 
   const activeSeason = await getActiveSeason();
 
   const expense = {
     id: generateId(),
     seasonId: activeSeason.id,
-    tier,
     value,
-    photoBlob: photoBlob ?? null,
+    photoBlob: photo ?? null,
     timestamp: new Date().toISOString(),
+    // Merge rich LogModal data (name, emoji, date, dateTime, amount, etc.)
+    ...extraData,
   };
 
   await saveExpense(expense);
