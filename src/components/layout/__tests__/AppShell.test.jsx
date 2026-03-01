@@ -16,9 +16,9 @@ describe('AppShell', () => {
     renderWithRouter(<AppShell><div>Test</div></AppShell>);
   });
 
-  it('renders Header (contains "Level" text)', () => {
+  it('renders Header (contains "AGRAIN" text)', () => {
     renderWithRouter(<AppShell><div>Test</div></AppShell>);
-    expect(screen.getByText('Level')).toBeInTheDocument();
+    expect(screen.getByText('AGRAIN')).toBeInTheDocument();
   });
 
   it('renders BottomNav (contains nav items)', () => {

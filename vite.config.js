@@ -13,8 +13,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
       manifest: {
-        name: 'Level - Kalasag ng Magsasaka',
-        short_name: 'Level',
+        name: 'Agrain - Kalasag ng Magsasaka',
+        short_name: 'Agrain',
         description: 'Offline na expense tracker at break-even calculator para sa magsasaka.',
         theme_color: '#166534',
         background_color: '#f0fdf4',

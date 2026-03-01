@@ -13,7 +13,7 @@ export default function Header() {
             letterSpacing: 3,
             textTransform: "uppercase",
             lineHeight: 1,
-          }}>Level</span>
+          }}>AGRAIN</span>
         </div>
         <span style={{
           fontFamily: FONTS.rustyne,

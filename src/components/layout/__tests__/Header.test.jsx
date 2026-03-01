@@ -7,9 +7,9 @@ describe('Header', () => {
     render(<Header />);
   });
 
-  it('contains the text "Level" (app name)', () => {
+  it('contains the text "AGRAIN" (app name)', () => {
     render(<Header />);
-    expect(screen.getByText('Level')).toBeInTheDocument();
+    expect(screen.getByText('AGRAIN')).toBeInTheDocument();
   });
 
   it('contains the tagline text', () => {
