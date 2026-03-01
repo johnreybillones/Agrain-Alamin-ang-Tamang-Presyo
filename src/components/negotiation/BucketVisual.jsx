@@ -1,34 +1,72 @@
+import { COLORS, FONTS, CARD_STYLE } from '../../utils/designTokens.js';
+
 /**
- * Filling tank that visualizes total seasonal expenses.
- * Fills from bottom to top in red tones.
+ * BucketVisual — Filling tank showing total seasonal expenses.
+ * Extracted from LevelAppV2's SakahanScreen.
  *
  * @param {number} totalExpenses - Current total in ₱
- * @param {number} maxExpenses   - Visual "full" level (e.g. ₱35,000)
+ * @param {number} expenseCount  - Number of expenses logged
+ * @param {number} maxExpenses   - Visual "full" level (default ₱35,000)
  */
-export default function BucketVisual({ totalExpenses, maxExpenses = 35000 }) {
-  const fillPct = Math.min((totalExpenses / maxExpenses) * 100, 100);
+export default function BucketVisual({ totalExpenses, expenseCount = 0, maxExpenses = 35000 }) {
+  const bucketFill = Math.min((totalExpenses / maxExpenses) * 100, 100);
 
   return (
-    <div className="flex flex-col items-center px-4 py-2">
-      {/* Tank */}
-      <div className="relative w-48 h-48 rounded-2xl border-4 border-red-300 bg-white overflow-hidden shadow-inner">
-        {/* Fill */}
-        <div
-          className="absolute bottom-0 left-0 right-0 bg-red-400 transition-all duration-700"
-          style={{ height: `${fillPct}%` }}
-        />
-        {/* Amount overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold tabular-nums text-gray-900 drop-shadow">
-            ₱{totalExpenses.toLocaleString()}
-          </span>
-          <span className="text-sm text-gray-600 font-medium">Kabuuang Gastos</span>
+    <div style={{
+      ...CARD_STYLE,
+      border: `2px solid ${COLORS.tan2}`,
+      background: `linear-gradient(145deg, ${COLORS.white}, ${COLORS.cream})`,
+    }}>
+      {/* Title */}
+      <div style={{ padding: '16px 20px 0', textAlign: 'center' }}>
+        <div style={{
+          fontFamily: FONTS.duvet,
+          fontSize: 'clamp(14px, 3vw, 18px)',
+          fontWeight: 700,
+          color: COLORS.dark,
+          letterSpacing: 3,
+          textTransform: 'uppercase',
+          marginBottom: 4,
+        }}>
+          Kabuuang Gastos
         </div>
       </div>
-      {/* Labels */}
-      <div className="flex justify-between w-48 mt-1 text-xs text-gray-400">
-        <span>₱0</span>
-        <span>₱{maxExpenses.toLocaleString()}</span>
+
+      {/* Tank */}
+      <div className="bucket-tank">
+        <div className="bucket-fill" style={{ height: `${bucketFill}%` }} />
+        {bucketFill > 5 && <div className="bucket-wave" style={{ bottom: `${bucketFill}%` }} />}
+        <div className="bucket-label">
+          <div style={{
+            fontFamily: FONTS.duvet,
+            fontSize: 'clamp(28px, 6vw, 38px)',
+            color: COLORS.dark,
+            letterSpacing: -1,
+            lineHeight: 1,
+            display: 'flex', alignItems: 'flex-start', gap: 2,
+            textShadow: '0 1px 6px rgba(254,250,224,0.7)',
+          }}>
+            <span style={{
+              fontSize: 'clamp(18px, 3.5vw, 24px)',
+              color: COLORS.burnt,
+              paddingTop: 4,
+            }}>₱</span>
+            <span>{totalExpenses.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Subtitle */}
+      <div style={{ padding: '6px 20px 14px', textAlign: 'center' }}>
+        <div style={{
+          fontSize: 'clamp(11px, 2.2vw, 13px)',
+          color: COLORS.muted,
+          fontWeight: 500,
+        }}>
+          {expenseCount > 0
+            ? `${expenseCount} ang gastos ngayong panahon ng pagtatanim`
+            : 'Wala pang nakalista— pindutin ang "Maglista ng Gastos"'}
+        </div>
       </div>
     </div>
   );

@@ -1,118 +1,210 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSeason } from '../context/SeasonContext.jsx';
-import { calculateBreakEvenForSeason } from '../services/negotiationService.js';
 import { checkOffer } from '../services/feedbackService.js';
 import { updateSeason } from '../services/seasonService.js';
+import { COLORS, FONTS, CARD_STYLE } from '../utils/designTokens.js';
 import HarvestInput from '../components/negotiation/HarvestInput.jsx';
-import BucketVisual from '../components/negotiation/BucketVisual.jsx';
 import NegotiationSlider from '../components/negotiation/NegotiationSlider.jsx';
 import BreakEvenDisplay from '../components/negotiation/BreakEvenDisplay.jsx';
-import BigButton from '../components/ui/BigButton.jsx';
 
 export default function NegotiationPage() {
   const { totalExpenses, season, refresh } = useSeason();
-  const [harvestWeight, setHarvestWeight] = useState(0);
-  const [breakEvenPrice, setBreakEvenPrice] = useState(0);
-  const [offerPrice, setOfferPrice] = useState(0);
-  const [isProfitable, setIsProfitable] = useState(true);
-  const [weightSaved, setWeightSaved] = useState(false);
+  const [harvest, setHarvest] = useState('');
+  const SLIDER_MIN = 1;
 
-  // Recompute break-even whenever harvest weight changes
+  // Pre-populate harvest weight from the saved season record.
+  // Runs once when season first loads from IndexedDB (starts as null).
   useEffect(() => {
-    if (harvestWeight > 0) {
-      calculateBreakEvenForSeason(harvestWeight).then((price) => {
-        setBreakEvenPrice(price);
-        // Reset slider to break-even as a sensible default
-        setOfferPrice(Math.ceil(price));
-        setIsProfitable(checkOffer(Math.ceil(price), price));
-      });
-    } else {
-      setBreakEvenPrice(0);
-      setOfferPrice(0);
+    if (season?.totalWeight > 0 && !harvest) {
+      setHarvest(String(season.totalWeight));
     }
-  }, [harvestWeight]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [season?.totalWeight]);
 
-  // Real-time slider: fire the exact millisecond the value changes
-  const handleSliderChange = useCallback(
-    (value) => {
-      setOfferPrice(value);
-      const profitable = checkOffer(value, breakEvenPrice);
-      setIsProfitable(profitable);
-    },
-    [breakEvenPrice]
-  );
+  // Derived state
+  const kg = parseFloat(harvest) || 0;
+  // Always ceil to nearest cent — the farmer needs at LEAST this price to break even.
+  // Math.round would round ₱1.004 DOWN to ₱1.00, showing SULIT while losing money.
+  const be = kg > 0 && totalExpenses > 0
+    ? Math.ceil((totalExpenses / kg) * 100) / 100
+    : null;
+  const isReady = be !== null;
+  const [offer, setOffer] = useState(SLIDER_MIN);
+  // Strict comparison — no tolerance so SULIT/LUGI always matches the summary table
+  const isProfit = isReady && offer >= be;
 
-  async function handleSaveWeight() {
-    if (!season || harvestWeight <= 0) return;
-    await updateSeason(season.id, { totalWeight: harvestWeight, totalExpenseValue: totalExpenses });
+  // sliderMax only ever grows — prevents the native <input type="range"> thumb from
+  // momentarily snapping to 100% (far right) when `max` shrinks faster than `value`
+  // during rapid typing (browser processes `max` attribute before `value`).
+  const computedMax = be !== null
+    ? Math.max(Math.round(be * 1.5 * 100) / 100, 80)
+    : 80;
+  const [sliderMax, setSliderMax] = useState(computedMax);
+  useEffect(() => {
+    if (isReady) setSliderMax(prev => Math.max(prev, computedMax));
+  }, [isReady, computedMax]);
+
+  // Initialize the slider at break-even only when isReady first becomes true.
+  // Subsequent harvest edits keep the slider where the user last left it.
+  const prevIsReadyRef = useRef(false);
+  useEffect(() => {
+    if (isReady && !prevIsReadyRef.current && be !== null) {
+      setOffer(Math.min(computedMax, Math.max(SLIDER_MIN, be)));
+    }
+    prevIsReadyRef.current = isReady;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady]);
+
+  // Vibrate only on the transition from profit → loss (not on every update)
+  const prevProfitRef = useRef(true);
+  // Debounce timer for DB saves — avoids hitting IndexedDB on every keystroke
+  const saveTimerRef = useRef(null);
+  // Clear pending save on unmount so it doesn't fire after navigation
+  useEffect(() => () => clearTimeout(saveTimerRef.current), []);
+  useEffect(() => {
+    if (isReady && !isProfit && prevProfitRef.current) {
+      checkOffer(offer, be); // fires navigator.vibrate internally
+    }
+    prevProfitRef.current = isProfit;
+  }, [offer, isProfit, isReady, be]);
+
+  // Persist harvest weight to season store.
+  // Accepts fresh string value directly to avoid stale closure on `harvest` state.
+  async function saveHarvestWeight(freshVal) {
+    const kgFresh = parseFloat(freshVal) || 0;
+    if (!season || kgFresh <= 0) return;
+    await updateSeason(season.id, { totalWeight: kgFresh, totalExpenseValue: totalExpenses });
     await refresh();
-    setWeightSaved(true);
   }
 
-  // Background color driven by profitability
-  const bgClass = breakEvenPrice > 0
-    ? isProfitable
-      ? 'bg-green-600'
-      : 'bg-red-600'
-    : 'bg-green-50';
+  // Dynamic background — mirrors LevelAppV2 exactly
+  const screenBg = !isReady ? COLORS.cream : isProfit ? '#66BB6A' : '#EF5350';
 
-  const textClass = breakEvenPrice > 0 ? 'text-white' : 'text-gray-800';
+  // Profit/loss summary row data — same structure as LevelAppV2
+  const pl = kg > 0 ? offer * kg - totalExpenses : null;
+  const summaryRows = isReady ? [
+    { key: 'Kabuuang Gastos',          val: `₱${totalExpenses.toLocaleString()}`,   accent: false },
+    { key: 'Timbang ng Ani',           val: `${kg} kg`,                             accent: false },
+    { key: 'Presyong balik-puhunan',   val: `₱${be}`,                              accent: 'burnt' },
+    {
+      key: isProfit ? 'Kita sa alok' : 'Lugi sa alok',
+      val: pl >= 0
+        ? `+₱${Math.abs(pl).toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+        : `−₱${Math.abs(pl).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      accent: isProfit ? 'olive' : 'pula',
+    },
+  ] : [];
 
   return (
-    <div className={`min-h-screen flex flex-col gap-6 py-6 transition-colors duration-150 ${bgClass}`}>
-      {/* Bucket visual */}
-      <div className="flex flex-col items-center">
-        <BucketVisual totalExpenses={totalExpenses} />
-      </div>
+    <div className="screen-body" style={{ background: screenBg, transition: 'background 0.4s' }}>
 
-      {/* Harvest weight input */}
-      <div className={breakEvenPrice > 0 ? 'bg-white/10 rounded-2xl mx-4 p-4' : ''}>
-        <HarvestInput value={harvestWeight} onChange={setHarvestWeight} />
-        {harvestWeight > 0 && (
-          <div className="px-4 pt-3">
-            <BigButton
-              onClick={handleSaveWeight}
-              className={`w-full ${weightSaved ? 'bg-gray-300 text-gray-600' : 'bg-green-700 text-white'}`}
-            >
-              {weightSaved ? 'Na-save na ang Timbang ✓' : 'I-set ang Timbang'}
-            </BigButton>
+      {/* Total cost header — shown only when there are expenses */}
+      {totalExpenses > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+        }}>
+          <div style={{
+            fontFamily: FONTS.duvet, fontSize: 'clamp(18px, 3.5vw, 24px)',
+            color: COLORS.dark, letterSpacing: 2, textTransform: 'uppercase',
+          }}>
+            Suriin ang tamang presyo:
           </div>
-        )}
-      </div>
-
-      {/* Break-even display */}
-      {breakEvenPrice > 0 && (
-        <BreakEvenDisplay breakEvenPrice={breakEvenPrice} isProfitable={isProfitable} />
-      )}
-
-      {/* Negotiation slider */}
-      {breakEvenPrice > 0 && (
-        <div className="bg-white rounded-2xl mx-4 p-4">
-          <NegotiationSlider
-            value={offerPrice}
-            onChange={handleSliderChange}
-            breakEvenPrice={breakEvenPrice}
-          />
+          <div style={{ textAlign: 'right' }}>
+            <div style={{
+              fontFamily: FONTS.duvet, fontSize: 'clamp(14px, 2.8vw, 18px)',
+              fontWeight: 700, color: COLORS.dark, letterSpacing: 2, textTransform: 'uppercase',
+            }}>
+              Kabuuang Gastos
+            </div>
+            <div style={{
+              fontFamily: FONTS.duvet, fontSize: 'clamp(18px, 3.5vw, 24px)',
+              color: COLORS.pula, letterSpacing: 1, fontWeight: 700,
+            }}>
+              ₱{totalExpenses.toLocaleString()}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Status label */}
-      {breakEvenPrice > 0 && (
-        <div className="flex justify-center">
-          <span className={`text-5xl font-black tracking-widest ${textClass}`}>
-            {isProfitable ? 'KITA! 🎉' : 'LUGI! ⚠️'}
+      {/* Harvest input — shown when there are expenses */}
+      {totalExpenses > 0 && (
+        <HarvestInput
+          value={harvest}
+          onChange={(v) => {
+            setHarvest(v);
+            clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(() => saveHarvestWeight(v), 600);
+          }}
+        />
+      )}
+
+      {/* Break-even display — shown only when ready */}
+      {isReady && <BreakEvenDisplay breakEvenPrice={be} />}
+
+      {/* Slider — shown only when ready. toQuarter is applied inside NegotiationSlider. */}
+      {isReady && (
+        <NegotiationSlider
+          value={offer}
+          onChange={(v) => setOffer(v)}
+          breakEvenPrice={be}
+          isProfitable={isProfit}
+          max={sliderMax}
+          min={SLIDER_MIN}
+        />
+      )}
+
+      {/* Summary table — shown only when ready */}
+      {isReady && (
+        <div style={{ ...CARD_STYLE, overflow: 'hidden' }}>
+          {summaryRows.map((row, i, arr) => (
+            <div key={i} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '11px 16px',
+              borderBottom: i < arr.length - 1 ? `1px solid ${COLORS.tan1}` : 'none',
+            }}>
+              <span style={{ fontSize: 12, color: COLORS.muted, fontWeight: 600 }}>
+                {row.key}
+              </span>
+              <span style={{
+                fontFamily: FONTS.duvet, fontSize: 15, letterSpacing: 0.5,
+                color:
+                  row.accent === 'burnt' ? COLORS.burnt :
+                  row.accent === 'olive' ? COLORS.olive :
+                  row.accent === 'pula'  ? COLORS.pula  : COLORS.dark,
+                transition: 'color 0.4s',
+              }}>
+                {row.val}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state — no expenses yet */}
+      {!isReady && totalExpenses === 0 && (
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 10, textAlign: 'center', paddingBottom: 40,
+        }}>
+          <span style={{ fontSize: 52, opacity: 0.4 }}>⚖️</span>
+          <span style={{
+            fontFamily: FONTS.duvet,
+            fontSize: 'clamp(18px, 3.5vw, 22px)',
+            letterSpacing: 2, textTransform: 'uppercase', color: COLORS.dark,
+          }}>
+            Maglista muna ng gastos
           </span>
-        </div>
-      )}
-
-      {/* Helper hint when no weight entered yet */}
-      {harvestWeight <= 0 && (
-        <div className="px-6 text-center">
-          <p className="text-lg text-gray-500">
-            Ilagay ang timbang ng ani mo para makita ang presyong balik-puhunan.
-          </p>
+          <span style={{
+            fontSize: 'clamp(13px, 2.5vw, 15px)',
+            lineHeight: 1.6, color: COLORS.dark, fontWeight: 500,
+          }}>
+            Para makita ang tamang presyo.
+          </span>
         </div>
       )}
     </div>
   );
 }
+
