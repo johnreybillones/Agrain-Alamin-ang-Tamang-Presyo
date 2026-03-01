@@ -23,11 +23,9 @@ export default function NegotiationSlider({ value, onChange, breakEvenPrice, isP
 
   return (
     <div style={{ ...CARD_STYLE, padding: 'clamp(12px, 2.5vw, 16px) clamp(14px, 3vw, 20px)' }}>
-      {/* Header with label + verdict */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 12, marginBottom: 12,
-      }}>
+      {/* Header with label + verdict — column layout to prevent wrapping on narrow screens */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 24 }}>
+        {/* Row 1: title */}
         <div style={{
           fontFamily: FONTS.duvet,
           fontSize: 'clamp(14px, 2.8vw, 18px)',
@@ -38,7 +36,8 @@ export default function NegotiationSlider({ value, onChange, breakEvenPrice, isP
         }}>
           Magkano ang alok ng buyer? (kada kilo)
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end' }}>
+        {/* Row 2: verdict pill + price — always fits on one line */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
           <div style={{ textAlign: 'right', lineHeight: 1.2 }}>
             <div style={{
               fontFamily: FONTS.duvet,
@@ -70,7 +69,7 @@ export default function NegotiationSlider({ value, onChange, breakEvenPrice, isP
       </div>
 
       {/* Slider with break-even marker */}
-      <div style={{ position: 'relative', paddingTop: 4 }}>
+      <div style={{ position: 'relative', paddingTop: 20 }}>
         <div style={{
           position: 'absolute',
           left: `${Math.min(100, Math.max(0, bePct))}%`,

@@ -38,7 +38,7 @@ export default function ExpenseCard({ expense, index, onDelete }) {
           <span style={{
             fontSize: 'clamp(16px, 3.2vw, 20px)', fontWeight: 800, color: COLORS.pula,
             fontFamily: FONTS.duvet, letterSpacing: 0.5,
-          }}>₱{expense.amount.toLocaleString()}</span>
+          }}>₱{(expense.amount ?? expense.value).toLocaleString()}</span>
         </div>
 
         {/* Delete Button */}

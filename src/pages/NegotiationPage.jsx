@@ -59,6 +59,8 @@ export default function NegotiationPage() {
   const prevProfitRef = useRef(true);
   // Debounce timer for DB saves — avoids hitting IndexedDB on every keystroke
   const saveTimerRef = useRef(null);
+  // Clear pending save on unmount so it doesn't fire after navigation
+  useEffect(() => () => clearTimeout(saveTimerRef.current), []);
   useEffect(() => {
     if (isReady && !isProfit && prevProfitRef.current) {
       checkOffer(offer, be); // fires navigator.vibrate internally

@@ -25,7 +25,7 @@ export default function ExpenseList({ expenses, onDelete }) {
   return (
     <div className="expense-list">
       {expenses.map((expense, i) => (
-        <ExpenseCard key={i} expense={expense} index={i} onDelete={onDelete} />
+        <ExpenseCard key={expense.id ?? i} expense={expense} index={i} onDelete={onDelete} />
       ))}
     </div>
   );
