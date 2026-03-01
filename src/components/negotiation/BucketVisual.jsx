@@ -64,8 +64,8 @@ export default function BucketVisual({ totalExpenses, expenseCount = 0, maxExpen
           fontWeight: 500,
         }}>
           {expenseCount > 0
-            ? `${expenseCount} ang gastos ngayong panahon ng pagtatanim`
-            : 'Wala pang nakalista— pindutin ang "Maglista ng Gastos"'}
+            ? `${expenseCount} ang pinagkagastusan ngayong panahon ng pagtatanim`
+            : 'Wala pang nakalista. Pindutin ang "Maglista ng Gastos"'}
         </div>
       </div>
     </div>
